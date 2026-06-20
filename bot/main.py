@@ -1,29 +1,21 @@
 import asyncio
 import logging
+import os
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 from dotenv import load_dotenv
-import os
 
-# Загрузка переменных окружения
 load_dotenv()
-
-# Настройки
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
-# Логирование
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-# Главное меню
 def get_main_menu():
-    keyboard = ReplyKeyboardMarkup(
+    return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="📝 Создать задачу")],
             [KeyboardButton(text="🤖 Мои агенты")],
@@ -34,82 +26,40 @@ def get_main_menu():
         ],
         resize_keyboard=True
     )
-    return keyboard
 
-# Создание бота
 async def main():
     if not BOT_TOKEN:
-        logger.error("TELEGRAM_BOT_TOKEN не установлен!")
+        logger.error("TELEGRAM_BOT_TOKEN not set!")
         return
     
     bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
     
-    # Обработчик /start
     @dp.message(Command("start"))
-    async def cmd_start(message: Message):        welcome = f"""
-👋 <b>Добро пожаловать, {message.from_user.full_name}!</b>
-
-🤖 <b>Я - Профессор Олвион</b>
-Ваш интеллектуальный помощник
-
-🎯 <b>Что я умею:</b>
-• Создавать и управлять задачами
-• Оркестрировать ИИ-агентов
-• Сканировать сообщения
-• Вести CRM
-
-💡 Нажмите на кнопку внизу, чтобы начать!
-        """
+    async def cmd_start(message: Message):
+        welcome = f"👋 Добро пожаловать, {message.from_user.full_name}!\n\n Я - Профессор Олвион\nВаш интеллектуальный помощник\n\n🎯 Что я умею:\n• Создавать и управлять задачами\n• Оркестрировать ИИ-агентов\n• Сканировать сообщения\n• Вести CRM\n\n💡 Нажмите на кнопку внизу, чтобы начать!"
         await message.answer(welcome, reply_markup=get_main_menu())
     
-    # Обработчик кнопок
     @dp.message()
     async def handle_buttons(message: Message):
         text = message.text
         
-        if text == "📝 Создать задачу":
-            await message.answer("📝 <b>Создание задачи</b>\n\nОпишите вашу задачу:")
-        
+        if text == " Создать задачу":
+            await message.answer(" Создание задачи\n\nОпишите вашу задачу:")
         elif text == "🤖 Мои агенты":
-            await message.answer("""
-🤖 <b>Ваши ИИ-агенты:</b>
-
-🎯 <b>Джорлин</b> - архитектура лендингов
-💰 <b>CFO</b> - финансовый анализ
-👥 <b>Квалификатор</b> - оценка лидов
-📱 <b>SMM-Админ</b> - соцсети
-🔍 <b>Сканер</b> - анализ сообщений
-            """)
-        
+            await message.answer("🤖 Ваши ИИ-агенты:\n\n🎯 Джорлин - архитектура лендингов\n💰 CFO - финансовый анализ\n👥 Квалификатор - оценка лидов\n📱 SMM-Админ - соцсети\n🔍 Сканер - анализ сообщений")
         elif text == "📊 Проекты (CRM)":
-            await message.answer("📊 <b>Ваши проекты</b>\n\nПока нет проектов. Создайте первую задачу!")
-        
+            await message.answer("📊 Ваши проекты\n\nПока нет проектов. Создайте первую задачу!")
         elif text == "🔍 Сканер сообщений":
-            await message.answer("""
-🔍 <b>Сканер личных сообщений</b>
-
-Агент читает чаты и присылает сводку:
-• кто ждет ответа
-• где деньги
-• где срочное
-
-Функция в разработке...
-            """)
-                elif text == "⏱️ Активные задачи":
-            await message.answer("⏱️ <b>Активные задачи</b>\n\nНет активных задач")
-        
+            await message.answer(" Сканер личных сообщений\n\nАгент читает чаты и присылает сводку:\n• кто ждет ответа\n• где деньги\n• где срочное\n\nФункция в разработке...")
+        elif text == "⏱️ Активные задачи":
+            await message.answer("⏱️ Активные задачи\n\nНет активных задач")
         elif text == "⚙️ Настройки":
-            await message.answer(f"""
-⚙️ <b>Настройки</b>
+            await message.answer(f"⚙️ Настройки\n\nВаш ID: {message.from_user.id}\nUsername: @{message.from_user.username or 'не указан'}")
 
-Ваш ID: <code>{message.from_user.id}</code>
-Username: @{message.from_user.username or 'не указан'}
-            """)
-    
-    # Запуск
-    logger.info("🚀 Бот запущен...")
-    await dp.start_polling(bot)
+async def run_bot():
+    logger.info(" Bot started!")
+    await main()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(run_bot())
